@@ -1,1 +1,9 @@
 autom4te.cache/
+Debug/
+*.vcproj.*
+*.suo
+*.ncb
+*.obj
+*.dll
+*.exe
+*.lib

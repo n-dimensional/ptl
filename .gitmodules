@@ -4,3 +4,6 @@
 [submodule "libevent"]
 	path = libevent
 	url = git://github.com/libevent/libevent.git
+[submodule "libsyslog"]
+	path = libsyslog
+	url = git://github.com/yurial/libsyslog.git

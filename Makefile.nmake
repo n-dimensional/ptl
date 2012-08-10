@@ -1,0 +1,42 @@
+# Needed for correctness
+CFLAGS=/Ilibevent/include /Ilibsyslogpp/src /Ilibsyslog/src /DHAVE_CONFIG_H
+
+# For optimization and warnings
+CFLAGS=$(CFLAGS) /Ox /W3 /nologo /EHsc
+
+LIBFLAGS=/nologo
+
+CORE_OBJS=
+WIN_OBJS=
+EXTRA_OBJS=
+
+ALL_OBJS=$(CORE_OBJS) $(WIN_OBJS) $(EXTRA_OBJS)
+STATIC_LIBS=
+DEPDLL=syslogpp_r.dll syslog.dll
+
+all: static_libs tests
+static_libs: $(STATIC_LIBS)
+depdll: $(DEPDLL)
+
+test.lib: $(CORE_OBJS) $(WIN_OBJS)
+	lib $(LIBFLAGS) $(CORE_OBJS) $(WIN_OBJS) /out:libevent_core.lib 
+
+clean:
+	del $(ALL_OBJS) $(STATIC_LIBS) buildtest.exe $(DEPDLL)
+
+syslog.dll:
+	cd libsyslog
+	nmake -f Makefile.nmake
+	cp syslog.dll syslog.lib ..
+	nmake -f Makefile.nmake clean
+	cd ..
+
+syslogpp_r.dll:
+	cd libsyslogpp
+	nmake -f Makefile.nmake
+	cp syslogpp_r.dll syslogpp_r.lib ..
+	nmake -f Makefile.nmake clean
+	cd ..
+
+tests: depdll
+	cl $(CFLAGS) $(LIBFLAGS) syslogpp_r.lib src/buildtest.cpp
