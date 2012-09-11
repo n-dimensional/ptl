@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__make_dryrun = \
   { \
@@ -51,7 +52,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = ptld$(EXEEXT) dbg$(EXEEXT)
+bin_PROGRAMS = ptld$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure \
@@ -62,7 +63,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/acx_pthread.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -71,14 +72,58 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/src/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  test -z "$$files" \
+    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+         $(am__cd) "$$dir" && rm -f $$files; }; \
+  }
+am__installdirs = "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(bindir)"
+LTLIBRARIES = $(plugin_LTLIBRARIES)
+base_la_LIBADD =
+am_base_la_OBJECTS = base.lo
+base_la_OBJECTS = $(am_base_la_OBJECTS)
+base_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(base_la_LDFLAGS) $(LDFLAGS) -o $@
+ip_la_LIBADD =
+am_ip_la_OBJECTS = ip.lo tcp.lo connection.lo
+ip_la_OBJECTS = $(am_ip_la_OBJECTS)
+ip_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(ip_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 PROGRAMS = $(bin_PROGRAMS)
-am_dbg_OBJECTS = dbg.$(OBJEXT)
-dbg_OBJECTS = $(am_dbg_OBJECTS)
-dbg_LDADD = $(LDADD)
-am_ptld_OBJECTS = ptld.$(OBJEXT)
+am__objects_1 = unix_help.$(OBJEXT)
+am__objects_2 =
+am__objects_3 = ptl_main.$(OBJEXT) unix_lib.$(OBJEXT) \
+	event_pool.$(OBJEXT) core.$(OBJEXT)
+am__objects_4 = pugixml.$(OBJEXT)
+am__objects_5 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
+	$(am__objects_4)
+am_ptld_OBJECTS = $(am__objects_5) unix_main.$(OBJEXT)
 ptld_OBJECTS = $(am_ptld_OBJECTS)
-ptld_LDADD = $(LDADD)
+ptld_DEPENDENCIES =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/src
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -92,8 +137,16 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(dbg_SOURCES) $(ptld_SOURCES)
-DIST_SOURCES = $(dbg_SOURCES) $(ptld_SOURCES)
+CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+DIST_SOURCES = $(base_la_SOURCES) $(ip_la_SOURCES) $(ptld_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -136,6 +189,7 @@ CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DL_LIBS = @DL_LIBS@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -153,7 +207,7 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
-LIBS = @LIBS@
+LIBS = @DL_LIBS@ @SYSLOGPP_LIBS@ @PTHREAD_LIBS@ @LIBS@ @LDFLAGS@ $(PTHREAD_CFLAGS)
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -175,11 +229,15 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PTHREAD_CC = @PTHREAD_CC@
+PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
+PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSLOGPP_LIBS = @SYSLOGPP_LIBS@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -189,6 +247,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+acx_pthread_config = @acx_pthread_config@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -235,12 +294,26 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-ptld_SOURCES = ptld.c
-dbg_SOURCES = dbg.c
+PUGIXML_CFLAGS = -Ipugixml/src
+AM_CFLAGS = @CFLAGS@ $(PTHREAD_CFLAGS) $(PUGIXML_CFLAGS)
+AM_CPPFLAGS = @CPPFLAGS@ $(PTHREAD_CFLAGS) $(PUGIXML_CFLAGS)
+CSOURCES = src/unix_help.c 
+CPPSOURCES = 
+EFFSOURCES = src/ptl_main.cpp src/unix_lib.cpp src/event_pool.cpp src/core.cpp
+EXTSOURCES = pugixml/src/pugixml.cpp
+SOURCES = $(CSOURCES) $(CPPSOURCES) $(EFFSOURCES) $(EXTSOURCES)
+ptld_SOURCES = $(SOURCES) src/unix_main.cpp
+ptld_LDADD = 
+plugindir = $(prefix)/share/ptl/
+plugin_LTLIBRARIES = ip.la base.la
+base_la_SOURCES = src/modules/base/base.cpp
+base_la_LDFLAGS = -module -avoid-version -shared
+ip_la_SOURCES = src/modules/ip/ip.c src/modules/ip/tcp.c src/modules/ip/connection.c
+ip_la_LDFLAGS = -module -avoid-version -shared
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .c .cpp .lo .o .obj
 am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -290,6 +363,42 @@ $(top_srcdir)/src/config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f src/config.h src/stamp-h1
+install-pluginLTLIBRARIES: $(plugin_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	@list='$(plugin_LTLIBRARIES)'; test -n "$(plugindir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(plugindir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(plugindir)" || exit 1; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(plugindir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(plugindir)"; \
+	}
+
+uninstall-pluginLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(plugin_LTLIBRARIES)'; test -n "$(plugindir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(plugindir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(plugindir)/$$f"; \
+	done
+
+clean-pluginLTLIBRARIES:
+	-test -z "$(plugin_LTLIBRARIES)" || rm -f $(plugin_LTLIBRARIES)
+	@list='$(plugin_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
+base.la: $(base_la_OBJECTS) $(base_la_DEPENDENCIES) $(EXTRA_base_la_DEPENDENCIES) 
+	$(base_la_LINK) -rpath $(plugindir) $(base_la_OBJECTS) $(base_la_LIBADD) $(LIBS)
+ip.la: $(ip_la_OBJECTS) $(ip_la_DEPENDENCIES) $(EXTRA_ip_la_DEPENDENCIES) 
+	$(ip_la_LINK) -rpath $(plugindir) $(ip_la_OBJECTS) $(ip_la_LIBADD) $(LIBS)
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
@@ -336,12 +445,9 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-dbg$(EXEEXT): $(dbg_OBJECTS) $(dbg_DEPENDENCIES) $(EXTRA_dbg_DEPENDENCIES) 
-	@rm -f dbg$(EXEEXT)
-	$(LINK) $(dbg_OBJECTS) $(dbg_LDADD) $(LIBS)
 ptld$(EXEEXT): $(ptld_OBJECTS) $(ptld_DEPENDENCIES) $(EXTRA_ptld_DEPENDENCIES) 
 	@rm -f ptld$(EXEEXT)
-	$(LINK) $(ptld_OBJECTS) $(ptld_LDADD) $(LIBS)
+	$(CXXLINK) $(ptld_OBJECTS) $(ptld_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -349,8 +455,17 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbg.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ptld.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/base.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/connection.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/core.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event_pool.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ip.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ptl_main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pugixml.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unix_help.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unix_lib.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unix_main.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -372,6 +487,153 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+ip.lo: src/modules/ip/ip.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ip.lo -MD -MP -MF $(DEPDIR)/ip.Tpo -c -o ip.lo `test -f 'src/modules/ip/ip.c' || echo '$(srcdir)/'`src/modules/ip/ip.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/ip.Tpo $(DEPDIR)/ip.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/modules/ip/ip.c' object='ip.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ip.lo `test -f 'src/modules/ip/ip.c' || echo '$(srcdir)/'`src/modules/ip/ip.c
+
+tcp.lo: src/modules/ip/tcp.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcp.lo -MD -MP -MF $(DEPDIR)/tcp.Tpo -c -o tcp.lo `test -f 'src/modules/ip/tcp.c' || echo '$(srcdir)/'`src/modules/ip/tcp.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcp.Tpo $(DEPDIR)/tcp.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/modules/ip/tcp.c' object='tcp.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcp.lo `test -f 'src/modules/ip/tcp.c' || echo '$(srcdir)/'`src/modules/ip/tcp.c
+
+connection.lo: src/modules/ip/connection.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT connection.lo -MD -MP -MF $(DEPDIR)/connection.Tpo -c -o connection.lo `test -f 'src/modules/ip/connection.c' || echo '$(srcdir)/'`src/modules/ip/connection.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/connection.Tpo $(DEPDIR)/connection.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/modules/ip/connection.c' object='connection.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o connection.lo `test -f 'src/modules/ip/connection.c' || echo '$(srcdir)/'`src/modules/ip/connection.c
+
+unix_help.o: src/unix_help.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unix_help.o -MD -MP -MF $(DEPDIR)/unix_help.Tpo -c -o unix_help.o `test -f 'src/unix_help.c' || echo '$(srcdir)/'`src/unix_help.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/unix_help.Tpo $(DEPDIR)/unix_help.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/unix_help.c' object='unix_help.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unix_help.o `test -f 'src/unix_help.c' || echo '$(srcdir)/'`src/unix_help.c
+
+unix_help.obj: src/unix_help.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unix_help.obj -MD -MP -MF $(DEPDIR)/unix_help.Tpo -c -o unix_help.obj `if test -f 'src/unix_help.c'; then $(CYGPATH_W) 'src/unix_help.c'; else $(CYGPATH_W) '$(srcdir)/src/unix_help.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/unix_help.Tpo $(DEPDIR)/unix_help.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/unix_help.c' object='unix_help.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unix_help.obj `if test -f 'src/unix_help.c'; then $(CYGPATH_W) 'src/unix_help.c'; else $(CYGPATH_W) '$(srcdir)/src/unix_help.c'; fi`
+
+.cpp.o:
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
+
+.cpp.obj:
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.cpp.lo:
+@am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
+
+base.lo: src/modules/base/base.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT base.lo -MD -MP -MF $(DEPDIR)/base.Tpo -c -o base.lo `test -f 'src/modules/base/base.cpp' || echo '$(srcdir)/'`src/modules/base/base.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/base.Tpo $(DEPDIR)/base.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/modules/base/base.cpp' object='base.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o base.lo `test -f 'src/modules/base/base.cpp' || echo '$(srcdir)/'`src/modules/base/base.cpp
+
+ptl_main.o: src/ptl_main.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ptl_main.o -MD -MP -MF $(DEPDIR)/ptl_main.Tpo -c -o ptl_main.o `test -f 'src/ptl_main.cpp' || echo '$(srcdir)/'`src/ptl_main.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/ptl_main.Tpo $(DEPDIR)/ptl_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/ptl_main.cpp' object='ptl_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ptl_main.o `test -f 'src/ptl_main.cpp' || echo '$(srcdir)/'`src/ptl_main.cpp
+
+ptl_main.obj: src/ptl_main.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ptl_main.obj -MD -MP -MF $(DEPDIR)/ptl_main.Tpo -c -o ptl_main.obj `if test -f 'src/ptl_main.cpp'; then $(CYGPATH_W) 'src/ptl_main.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ptl_main.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/ptl_main.Tpo $(DEPDIR)/ptl_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/ptl_main.cpp' object='ptl_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ptl_main.obj `if test -f 'src/ptl_main.cpp'; then $(CYGPATH_W) 'src/ptl_main.cpp'; else $(CYGPATH_W) '$(srcdir)/src/ptl_main.cpp'; fi`
+
+unix_lib.o: src/unix_lib.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unix_lib.o -MD -MP -MF $(DEPDIR)/unix_lib.Tpo -c -o unix_lib.o `test -f 'src/unix_lib.cpp' || echo '$(srcdir)/'`src/unix_lib.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/unix_lib.Tpo $(DEPDIR)/unix_lib.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/unix_lib.cpp' object='unix_lib.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unix_lib.o `test -f 'src/unix_lib.cpp' || echo '$(srcdir)/'`src/unix_lib.cpp
+
+unix_lib.obj: src/unix_lib.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unix_lib.obj -MD -MP -MF $(DEPDIR)/unix_lib.Tpo -c -o unix_lib.obj `if test -f 'src/unix_lib.cpp'; then $(CYGPATH_W) 'src/unix_lib.cpp'; else $(CYGPATH_W) '$(srcdir)/src/unix_lib.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/unix_lib.Tpo $(DEPDIR)/unix_lib.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/unix_lib.cpp' object='unix_lib.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unix_lib.obj `if test -f 'src/unix_lib.cpp'; then $(CYGPATH_W) 'src/unix_lib.cpp'; else $(CYGPATH_W) '$(srcdir)/src/unix_lib.cpp'; fi`
+
+event_pool.o: src/event_pool.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT event_pool.o -MD -MP -MF $(DEPDIR)/event_pool.Tpo -c -o event_pool.o `test -f 'src/event_pool.cpp' || echo '$(srcdir)/'`src/event_pool.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/event_pool.Tpo $(DEPDIR)/event_pool.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/event_pool.cpp' object='event_pool.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o event_pool.o `test -f 'src/event_pool.cpp' || echo '$(srcdir)/'`src/event_pool.cpp
+
+event_pool.obj: src/event_pool.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT event_pool.obj -MD -MP -MF $(DEPDIR)/event_pool.Tpo -c -o event_pool.obj `if test -f 'src/event_pool.cpp'; then $(CYGPATH_W) 'src/event_pool.cpp'; else $(CYGPATH_W) '$(srcdir)/src/event_pool.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/event_pool.Tpo $(DEPDIR)/event_pool.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/event_pool.cpp' object='event_pool.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o event_pool.obj `if test -f 'src/event_pool.cpp'; then $(CYGPATH_W) 'src/event_pool.cpp'; else $(CYGPATH_W) '$(srcdir)/src/event_pool.cpp'; fi`
+
+core.o: src/core.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT core.o -MD -MP -MF $(DEPDIR)/core.Tpo -c -o core.o `test -f 'src/core.cpp' || echo '$(srcdir)/'`src/core.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/core.Tpo $(DEPDIR)/core.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/core.cpp' object='core.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o core.o `test -f 'src/core.cpp' || echo '$(srcdir)/'`src/core.cpp
+
+core.obj: src/core.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT core.obj -MD -MP -MF $(DEPDIR)/core.Tpo -c -o core.obj `if test -f 'src/core.cpp'; then $(CYGPATH_W) 'src/core.cpp'; else $(CYGPATH_W) '$(srcdir)/src/core.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/core.Tpo $(DEPDIR)/core.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/core.cpp' object='core.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o core.obj `if test -f 'src/core.cpp'; then $(CYGPATH_W) 'src/core.cpp'; else $(CYGPATH_W) '$(srcdir)/src/core.cpp'; fi`
+
+pugixml.o: pugixml/src/pugixml.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT pugixml.o -MD -MP -MF $(DEPDIR)/pugixml.Tpo -c -o pugixml.o `test -f 'pugixml/src/pugixml.cpp' || echo '$(srcdir)/'`pugixml/src/pugixml.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/pugixml.Tpo $(DEPDIR)/pugixml.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pugixml/src/pugixml.cpp' object='pugixml.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pugixml.o `test -f 'pugixml/src/pugixml.cpp' || echo '$(srcdir)/'`pugixml/src/pugixml.cpp
+
+pugixml.obj: pugixml/src/pugixml.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT pugixml.obj -MD -MP -MF $(DEPDIR)/pugixml.Tpo -c -o pugixml.obj `if test -f 'pugixml/src/pugixml.cpp'; then $(CYGPATH_W) 'pugixml/src/pugixml.cpp'; else $(CYGPATH_W) '$(srcdir)/pugixml/src/pugixml.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/pugixml.Tpo $(DEPDIR)/pugixml.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pugixml/src/pugixml.cpp' object='pugixml.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pugixml.obj `if test -f 'pugixml/src/pugixml.cpp'; then $(CYGPATH_W) 'pugixml/src/pugixml.cpp'; else $(CYGPATH_W) '$(srcdir)/pugixml/src/pugixml.cpp'; fi`
+
+unix_main.o: src/unix_main.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unix_main.o -MD -MP -MF $(DEPDIR)/unix_main.Tpo -c -o unix_main.o `test -f 'src/unix_main.cpp' || echo '$(srcdir)/'`src/unix_main.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/unix_main.Tpo $(DEPDIR)/unix_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/unix_main.cpp' object='unix_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unix_main.o `test -f 'src/unix_main.cpp' || echo '$(srcdir)/'`src/unix_main.cpp
+
+unix_main.obj: src/unix_main.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unix_main.obj -MD -MP -MF $(DEPDIR)/unix_main.Tpo -c -o unix_main.obj `if test -f 'src/unix_main.cpp'; then $(CYGPATH_W) 'src/unix_main.cpp'; else $(CYGPATH_W) '$(srcdir)/src/unix_main.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/unix_main.Tpo $(DEPDIR)/unix_main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/unix_main.cpp' object='unix_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unix_main.obj `if test -f 'src/unix_main.cpp'; then $(CYGPATH_W) 'src/unix_main.cpp'; else $(CYGPATH_W) '$(srcdir)/src/unix_main.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -598,9 +860,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -635,7 +897,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-libtool \
+	clean-pluginLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -656,7 +919,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-pluginLTLIBRARIES
 
 install-dvi: install-dvi-am
 
@@ -704,27 +967,31 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am: uninstall-binPROGRAMS uninstall-pluginLTLIBRARIES
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
-	clean-binPROGRAMS clean-generic clean-libtool ctags dist \
-	dist-all dist-bzip2 dist-gzip dist-lzip dist-lzma dist-shar \
-	dist-tarZ dist-xz dist-zip distcheck distclean \
-	distclean-compile distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
+	clean-binPROGRAMS clean-generic clean-libtool \
+	clean-pluginLTLIBRARIES ctags dist dist-all dist-bzip2 \
+	dist-gzip dist-lzip dist-lzma dist-shar dist-tarZ dist-xz \
+	dist-zip distcheck distclean distclean-compile \
+	distclean-generic distclean-hdr distclean-libtool \
+	distclean-tags distcleancheck distdir distuninstallcheck dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-binPROGRAMS install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-pluginLTLIBRARIES \
 	install-ps install-ps-am install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-binPROGRAMS
+	tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-pluginLTLIBRARIES
 
+
+$(EFFSOURCES:src/%.cpp=%.$(OBJEXT)): CPPFLAGS += -Weffc++
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

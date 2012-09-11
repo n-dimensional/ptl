@@ -7,3 +7,7 @@ Debug/
 *.dll
 *.exe
 *.lib
+*~
+.deps/
+config.log
+config.status

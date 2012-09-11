@@ -7,3 +7,6 @@
 [submodule "libsyslog"]
 	path = libsyslog
 	url = git://github.com/yurial/libsyslog.git
+[submodule "pugixml"]
+	path = pugixml
+	url = git://github.com/bagobor/pugixml.git
