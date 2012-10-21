@@ -632,6 +632,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+plugindir
 DL_LIBS
 SYSLOGPP_LIBS
 PTHREAD_CFLAGS
@@ -15501,6 +15502,14 @@ if  test "_$enable_debug" = "_yes" ; then
 
 
 $as_echo "#define DLEXT \".so\"" >>confdefs.h
+
+plugindir="${prefix}/share/ptl/"
+
+cat >>confdefs.h <<_ACEOF
+#define DLPATH "${plugindir}"
+_ACEOF
+
+plugindir=${plugindir}
 
 ac_config_headers="$ac_config_headers src/config.h"
 

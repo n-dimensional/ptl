@@ -17,6 +17,10 @@ if [ test "_$enable_debug" = "_yes" ]; then
 
 AH_TEMPLATE([DLEXT],[Dynamic library filename extension])
 AC_DEFINE([DLEXT],[".so"])
+plugindir="${prefix}/share/ptl/"
+AH_TEMPLATE([DLPATH],[Plugin directory])
+AC_DEFINE_UNQUOTED([DLPATH],"${plugindir}")
+AC_SUBST([plugindir],${plugindir})
 AC_CONFIG_HEADERS(src/config.h)
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

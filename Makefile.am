@@ -14,7 +14,7 @@ LIBS = @DL_LIBS@ @SYSLOGPP_LIBS@ @PTHREAD_LIBS@ @LIBS@ @LDFLAGS@ $(PTHREAD_CFLAG
 ptld_SOURCES = $(SOURCES) src/unix_main.cpp
 ptld_LDADD = 
 
-plugindir = $(prefix)/share/ptl/
+plugindir = @plugindir@
 plugin_LTLIBRARIES = ip.la base.la
 base_la_SOURCES = src/modules/base/base.cpp
 base_la_LDFLAGS = -module -avoid-version -shared
