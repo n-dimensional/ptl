@@ -105,7 +105,8 @@ for (pugi::xml_node child = cfg.first_child(); child; child = child.next_sibling
 
 void core_t::load_module(const char* name, const pugi::xml_node& cfg)
 {
-std::string libname( name );
+std::string libname( DLPATH );
+libname += name;
 libname += DLEXT;
 syslog( LOG_DEBUG ) << "loading module '" << libname << '\'' << std::endl;
 abstract::lib_t lib = abstract::lib_open( libname.c_str() );
