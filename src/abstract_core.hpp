@@ -1,8 +1,7 @@
-#include "core.hpp"
-
 #ifndef ABSTRACT_CORE_HPP
 #define ABSTRACT_CORE_HPP
 
+#include "core_base.hpp"
 #include "abstract_base.hpp"
 
 namespace abstract

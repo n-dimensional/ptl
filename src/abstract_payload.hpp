@@ -1,10 +1,9 @@
-#include "abstract_core.hpp"
-
 #ifndef ABSTRACT_PAYLOAD_HPP
 #define ABSTRACT_PAYLOAD_HPP
 
-#include "payload.hpp"
+#include "payload_base.hpp"
 #include "abstract_base.hpp"
+#include "abstract_core.hpp"
 
 namespace abstract
 {

@@ -6,14 +6,6 @@
 #include <event2/event.h>
 
 #include "event_pool.hpp"
-#include "core.h"
-
-namespace core
-{
-typedef core::c::core_interface_t   interface_t;
-typedef core::c::core_handle_t      handle_t;
-} //namespace core
-
 #include "transport.hpp"
 #include "payload.hpp"
 

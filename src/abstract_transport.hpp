@@ -1,10 +1,9 @@
-#include "abstract_core.hpp"
-
 #ifndef ABSTRACT_TRANSPORT_HPP
 #define ABSTRACT_TRANSPORT_HPP
 
-#include "transport.hpp"
+#include "transport_base.hpp"
 #include "abstract_base.hpp"
+#include "abstract_core.hpp"
 
 namespace abstract
 {

@@ -1,5 +1,3 @@
-#include "core.hpp"
-
 #ifndef TRANSPORT_HPP
 #define TRANSPORT_HPP
 
@@ -8,20 +6,8 @@
 
 #include <vector>
 
-#include "transport.h"
-
-namespace transport
-{
-typedef c::transport_interface_t        interface_t;
-typedef c::transport_name_t             name_t;
-typedef c::transport_handle_t           handle_t;
-
-typedef c::transport_count_t            count_t;
-typedef c::transport_count_func_t       count_func_t;
-typedef c::transport_interface_func_t   interface_func_t;
-} //namespace transport
-
 #include "cross_lib.h"
+#include "transport_base.hpp"
 #include "abstract_transport.hpp"
 
 namespace transport
