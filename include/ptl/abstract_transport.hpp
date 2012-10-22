@@ -1,9 +1,9 @@
 #ifndef ABSTRACT_TRANSPORT_HPP
 #define ABSTRACT_TRANSPORT_HPP
 
-#include "transport_base.hpp"
-#include "abstract_base.hpp"
-#include "abstract_core.hpp"
+#include <ptl/transport_base.hpp>
+#include <ptl/abstract_base.hpp>
+#include <ptl/abstract_core.hpp>
 
 namespace abstract
 {
@@ -31,7 +31,7 @@ inline  void    close();
 
 } //namespace abstract
 
-#include "abstract_transport.inc"
+#include <ptl/abstract_transport.inc>
 
 #endif
 

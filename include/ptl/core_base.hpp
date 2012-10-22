@@ -1,7 +1,7 @@
 #ifndef CORE_BASE_HPP
 #define CORE_BASE_HPP
 
-#include <core.h>
+#include <ptl/core.h>
 
 namespace core
 {

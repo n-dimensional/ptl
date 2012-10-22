@@ -2,7 +2,7 @@
 #define MODULE_HPP
 
 #include <stdint.h>
-#include "module.h"
+#include <ptl/module.h>
 
 namespace module
 {
@@ -35,7 +35,7 @@ inline  info_t(const module_info_t& info);
 
 } //namespace module
 
-#include "module.inc"
+#include <ptl/module.inc>
 
 #endif
 

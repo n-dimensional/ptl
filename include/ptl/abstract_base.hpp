@@ -31,7 +31,7 @@ inline  base&               operator = (const base& rvalue);
 
 } //namespace abstract
 
-#include "abstract_base.inc"
+#include <ptl/abstract_base.inc>
 
 #endif
 

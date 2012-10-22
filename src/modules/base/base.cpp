@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include <module.hpp>
-#include <payload.hpp>
-#include <core.hpp>
+#include <ptl/module.hpp>
+#include <ptl/abstract_payload.hpp>
+#include <ptl/abstract_core.hpp>
 
 static const char MODULE_FULL_NAME[] = "base v0.1";
 static const char MODULE_SHORT_NAME[] = "base";

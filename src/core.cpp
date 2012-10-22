@@ -4,9 +4,9 @@
 #include <syslog.h>
 #include <syslogpp.h>
 
-#include "core.hpp"
+#include <ptl/module.hpp>
 
-#include "module.hpp"
+#include "core.hpp"
 
 namespace core
 {

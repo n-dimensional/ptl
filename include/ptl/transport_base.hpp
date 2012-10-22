@@ -1,7 +1,7 @@
 #ifndef TRANSPORT_BASE_HPP
 #define TRANSPORT_BASE_HPP
 
-#include "transport.h"
+#include <ptl/transport.h>
 
 namespace transport
 {

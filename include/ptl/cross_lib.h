@@ -5,14 +5,11 @@
     #include "config.h"
 #endif
 
-#ifdef HAVE_DLFCN_H
-    #include "unix_lib.h"
-#else
-    #include "win_lib.h"
-#endif
-
 namespace abstract
 {
+typedef void* lib_t;
+typedef void* func_t;
+
 lib_t   lib_open(const char* libname);
 func_t  lib_sym(lib_t lib, const char* funcname);
 int     lib_close(lib_t lib); //zero = success

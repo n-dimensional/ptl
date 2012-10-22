@@ -1,8 +1,8 @@
 #ifndef ABSTRACT_CORE_HPP
 #define ABSTRACT_CORE_HPP
 
-#include "core_base.hpp"
-#include "abstract_base.hpp"
+#include <ptl/core_base.hpp>
+#include <ptl/abstract_base.hpp>
 
 namespace abstract
 {
@@ -23,7 +23,7 @@ inline event_base*  get_event_base();
 
 } //namespace abstract
 
-#include "abstract_core.inc"
+#include <ptl/abstract_core.inc>
 
 #endif
 

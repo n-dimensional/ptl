@@ -10,7 +10,7 @@
 
 #define PAYLOAD_INTERFACE_FUNC_NAME payload_interface_func
 
-#include "core.h"
+#include <ptl/core.h>
 
 #ifdef __cplusplus
     namespace payload {

@@ -1,10 +1,10 @@
 #ifndef PAYLOAD_HPP
 #define PAYLOAD_HPP
 
-#include "cross_lib.h"
+#include <ptl/cross_lib.h>
 
-#include "payload_base.hpp"
-#include "abstract_payload.hpp"
+#include <ptl/payload_base.hpp>
+#include <ptl/abstract_payload.hpp>
 
 namespace payload
 {

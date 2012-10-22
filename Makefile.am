@@ -1,9 +1,10 @@
 ACLOCAL_AMFLAGS = -I m4
 bin_PROGRAMS = ptld
-PUGIXML_CFLAGS=-Ipugixml/src
+PUGIXML_CFLAGS=-Iinclude -Ipugixml/src
 PTHREAD_CFLAGS=@PTHREAD_CFLAGS@
 AM_CFLAGS=@CFLAGS@ $(PTHREAD_CFLAGS) $(PUGIXML_CFLAGS)
 AM_CPPFLAGS=@CPPFLAGS@ $(PTHREAD_CFLAGS) $(PUGIXML_CFLAGS)
+include = include
 CSOURCES = src/unix_help.c 
 CPPSOURCES =
 EFFSOURCES = src/ptl_main.cpp src/unix_lib.cpp src/event_pool.cpp src/core.cpp

@@ -1,4 +1,5 @@
-#include "cross_lib.h"
+#include <dlfcn.h>
+#include "unix_lib.h"
 
 namespace abstract
 {
