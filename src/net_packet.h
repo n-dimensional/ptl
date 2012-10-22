@@ -7,11 +7,9 @@
 
 namespace net
 {
-namespace packet
-{
 //           packet
 //--------------------------------
-//|   0 1   |   2 3  | size - 4  |
+//|   0 1   |   2 3  |    size   |
 //|get_proto|get_size|           |
 //--------------------------------
 //|    get_header    | get_data  |
