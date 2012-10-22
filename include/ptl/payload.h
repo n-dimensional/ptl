@@ -19,6 +19,7 @@
     extern "C" {
 #endif
 
+typedef uint16_t    payload_id_t;
 typedef const char* payload_name_t;
 typedef void*       payload_handle_t;
 
@@ -31,6 +32,7 @@ typedef struct
 {
 payload_name_t          full_name;
 payload_name_t          short_name;
+payload_id_t            id;
 payload_init_func_t     init;
 payload_copy_func_t     copy;
 payload_cleanup_func_t  cleanup;

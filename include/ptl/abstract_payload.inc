@@ -15,5 +15,10 @@ payload_t::~payload_t()
 {
 }
 
+payload::id_t payload_t::id() const
+{
+return m_interface->id;
+}
+
 } //namespace abstract
 

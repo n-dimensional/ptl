@@ -1,6 +1,8 @@
 #ifndef CORE_HPP
 #define CORE_HPP
 
+#include <map>
+#include <vector>
 #include <string>
 
 #include <event2/event.h>
@@ -19,10 +21,15 @@ struct event_base*  static_get_event_base(handle_t handle);
 class core_t
 {
 protected:
-static  interface_t                 m_interface;
-event_pool_t                        m_event_pool;
-std::vector<transport::module_t>    m_transports;
-std::vector<payload::module_t>      m_payloads;
+typedef std::vector<transport::module_t>                    transports_container_t;
+typedef std::map<payload::id_t,payload::module_t>           payloads_container_t;
+typedef std::vector<payloads_container_t::const_iterator>   payloads_table_t;
+
+static  interface_t     m_interface;
+event_pool_t            m_event_pool;
+transports_container_t  m_transports;
+payloads_container_t    m_payloads;
+payloads_table_t        m_payloads_table;
 
 void    cfg_threads(const pugi::xml_node& cfg);
 void    cfg_modules(const pugi::xml_node& cfg);
@@ -35,9 +42,6 @@ void    load_module_payload(abstract::lib_t lib, const std::string& libname, con
 public:
         core_t(const pugi::xml_node& cfg);
 void    run(bool nonblock);
-
-void    payload_enable();
-void    payload_disable();
 
 struct event_base*  get_event_base();
 };

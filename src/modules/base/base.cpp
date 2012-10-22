@@ -3,8 +3,10 @@
 #include <ptl/abstract_payload.hpp>
 #include <ptl/abstract_core.hpp>
 
-static const char MODULE_FULL_NAME[] = "base v0.1";
-static const char MODULE_SHORT_NAME[] = "base";
+#define BASE_PAYLOAD_ID 0
+
+static const char BASE_FULL_NAME[] = "base v0.1";
+static const char BASE_SHORT_NAME[] = "base";
 
 class base_payload_t;
 
@@ -21,8 +23,9 @@ void                cleanup_func(payload::handle_t handle);
 static const struct module::info_t module_info( module::api_version, module::type::payload );
 
 payload::interface_t module_interface = {
-    MODULE_FULL_NAME,
-    MODULE_SHORT_NAME,
+    BASE_FULL_NAME,
+    BASE_SHORT_NAME,
+    BASE_PAYLOAD_ID,
     init_func,
     copy_func,
     cleanup_func

@@ -5,10 +5,11 @@
 
 namespace payload
 {
-typedef c::payload_name_t           name_t;
-typedef c::payload_handle_t         handle_t;
-typedef c::payload_interface_t      interface_t;
-typedef c::payload_interface_func_t interface_func_t;
+typedef payload::c::payload_id_t             id_t;
+typedef payload::c::payload_name_t           name_t;
+typedef payload::c::payload_handle_t         handle_t;
+typedef payload::c::payload_interface_t      interface_t;
+typedef payload::c::payload_interface_func_t interface_func_t;
 } //namespace payload
 
 #endif

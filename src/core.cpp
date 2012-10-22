@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <limits>
+
 #include <syslog.h>
 #include <syslogpp.h>
 
@@ -37,7 +39,7 @@ interface_t core_t::m_interface = {
     };
 
 core_t::core_t(const pugi::xml_node& cfg):
-    m_event_pool(), m_transports(), m_payloads()
+    m_event_pool(), m_transports(), m_payloads(), m_payloads_table( std::numeric_limits<payload::id_t>::max() )
 {
 pugi::xml_node threads_cfg;
 pugi::xml_node modules_cfg;
@@ -224,7 +226,16 @@ if ( module.m_payload.is_null() )
     return;
     }
 else
-    m_payloads.push_back( module );
+    {
+    std::pair<payloads_container_t::const_iterator,bool> result = m_payloads.insert( std::make_pair( payload->id, module ) );
+    if ( !result.second )
+        {
+        //TODO: error!
+        abstract::lib_close( lib );
+        return;
+        }
+    m_payloads_table[ module.m_payload.id() ] = result.first;
+    }
 }
 
 void core_t::run(bool nonblock)
