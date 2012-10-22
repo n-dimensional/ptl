@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+    #include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -115,7 +119,7 @@ if ( NULL == lib )
     syslog( LOG_ERR, "failed to load module: %s (%s)", libname.c_str(), abstract::lib_error() );
     return;
     }
-module::info_func_t info_func = (module::info_func_t)abstract::lib_sym( lib, STR(MODULE_INFO_FUNC_NAME) );
+module::info_func_t info_func = abstract::lib_sym<module::info_func_t>( lib, STR(MODULE_INFO_FUNC_NAME) );
 if ( NULL == info_func )
     {
     syslog( LOG_ERR, "module have no '" STR(MODULE_INFO_FUNC_NAME) "' func" );
@@ -148,14 +152,14 @@ switch ( info.type )
 
 void core_t::load_module_transport(abstract::lib_t lib, const std::string& libname, const pugi::xml_node& cfg)
 {
-transport::count_func_t count_func = (transport::count_func_t)abstract::lib_sym( lib, STR(TRANSPORT_COUNT_FUNC_NAME) );
+transport::count_func_t count_func = abstract::lib_sym<transport::count_func_t>( lib, STR(TRANSPORT_COUNT_FUNC_NAME) );
 if ( !count_func )
     {
     syslog( LOG_ERR, "transport module %s has no '" STR(TRANSPORT_COUNT_FUNC_NAME) "' func", libname.c_str() );
     abstract::lib_close( lib );
     return;
     }
-transport::interface_func_t interface_func = (transport::interface_func_t)abstract::lib_sym( lib, STR(TRANSPORT_INTERFACE_FUNC_NAME) );
+transport::interface_func_t interface_func = abstract::lib_sym<transport::interface_func_t>( lib, STR(TRANSPORT_INTERFACE_FUNC_NAME) );
 if ( !interface_func )
     {
     syslog( LOG_ERR, "transport module %s has no '" STR(TRANSPORT_INTERFACE_FUNC_NAME) "' func", libname.c_str() );
@@ -193,7 +197,7 @@ m_transports.push_back( module );
 
 void core_t::load_module_payload(abstract::lib_t lib, const std::string& libname, const pugi::xml_node& cfg)
 {
-payload::payload_interface_func_t payload_interface_func = (payload::payload_interface_func_t)abstract::lib_sym( lib, STR(PAYLOAD_INTERFACE_FUNC_NAME) );
+payload::interface_func_t payload_interface_func = abstract::lib_sym<payload::interface_func_t>( lib, STR(PAYLOAD_INTERFACE_FUNC_NAME) );
 if( !payload_interface_func )
     {
     syslog( LOG_ERR, "payload module %s has no '" STR(PAYLOAD_INTERFACE_FUNC_NAME) "' func", libname.c_str() );

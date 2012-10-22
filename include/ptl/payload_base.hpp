@@ -8,7 +8,7 @@ namespace payload
 typedef c::payload_name_t           name_t;
 typedef c::payload_handle_t         handle_t;
 typedef c::payload_interface_t      interface_t;
-typedef c::payload_interface_func_t payload_interface_func_t;
+typedef c::payload_interface_func_t interface_func_t;
 } //namespace payload
 
 #endif
