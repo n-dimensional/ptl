@@ -13,7 +13,7 @@ typedef c::payload_interface_t      interface_t;
 typedef c::payload_interface_func_t payload_interface_func_t;
 } //namespace payload
 
-#include "abstract_lib.h"
+#include "cross_lib.h"
 #include "abstract_payload.hpp"
 
 namespace payload

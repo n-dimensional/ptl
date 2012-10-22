@@ -21,7 +21,7 @@ typedef c::transport_count_func_t       count_func_t;
 typedef c::transport_interface_func_t   interface_func_t;
 } //namespace transport
 
-#include "abstract_lib.h"
+#include "cross_lib.h"
 #include "abstract_transport.hpp"
 
 namespace transport
